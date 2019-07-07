@@ -32,11 +32,12 @@ class Analyzer {
     
     private var beginSymbol: Character = "E"
     
-    private var inputStr = "i+i*i#"
+    private var sentence = "i+i*i#"
     
     private var option = ""
     
-    init(with list: [String]) {
+    init(with list: [String], with sentence: String) {
+        self.sentence = sentence
         for str in list {
             var row: [String] = str.components(separatedBy: "->")
             let vn = Character(row.removeFirst())
@@ -72,20 +73,20 @@ class Analyzer {
         showRow(with: i)
         var vn = analyzeStack.last!
         while vn != "$" {
-            let vt = Character(inputStr.subString(from: i, length: 1))
+            let vt = Character(sentence.subString(from: i, length: 1))
             if vn == vt {
                 option = "匹配 \(analyzeStack.popLast()!)"
                 i += 1
             } else if vtSet.contains(vn) {
                 return
-            } else if findElementFromTable(vn: vn, vt: vt) == "" {
+            } else if findElementFromTable(vn: vn, vt: vt) == "ERROR" {
                 return
             } else if findElementFromTable(vn: vn, vt: vt) == "ε" {
                 analyzeStack.removeLast()
                 option = "\(vn)->ε"
             } else {
                 let str = findElementFromTable(vn: vn, vt: vt)
-                if !str.isEmpty {
+                if str != "ERROR" {
                     option = "\(vn)->\(str)"
                     analyzeStack.removeLast()
                     for i in (0..<str.count).reversed() {
@@ -226,7 +227,7 @@ class Analyzer {
                                 curFollowSet.insert(s)
                             }
                         }
-//                        β包含空，把follow(symbol) 加入 follor(cur)中
+//                        β包含空，把follow(A) 加入 follor(B)中
                         if rightSymbolFirstSet.contains("ε") {
                             curFollowSet.formUnion(symbolFollowSet)
                         }
@@ -237,10 +238,14 @@ class Analyzer {
         }
     }
     
+    /// 创建预测分析表M
+    ///
+    /// 矩阵元素M[A,a]中存放着一条关于A的产生式，指出当A面临输入符号a时所应采用的候选。
+    /// M[A,a]中也可能存放一个“出错标志 ERROR”，指出A根本不该面临输入符号a
     private func createTable() {
         let vnArray = Array(vnSet)
         let vtArray = Array(vtSet)
-        table = Array.init(repeating: Array.init(repeating: "error", count: vtArray.count + 1), count: vnArray.count + 1)
+        table = Array.init(repeating: Array.init(repeating: "ERROR", count: vtArray.count + 1), count: vnArray.count + 1)
         table[0][0] = "vn/vt"
         for i in 1...vtArray.count {
             table[0][i] = String(vtArray[i - 1])
@@ -349,10 +354,12 @@ class Analyzer {
         for c in analyzeStack {
             stackStr.append(c)
         }
-        stackStr = stackStr + String.init(repeating: " ", count: 30 - stackStr.count)
-        var inputChar = inputStr.subString(from: index, length: 1)
-        inputChar = inputChar + String.init(repeating: " ", count: 20 - inputChar.count)
-        print(stackStr + inputChar + option)
+        stackStr = stackStr + String.init(repeating: " ", count: 15 - stackStr.count)
+        var inputChar = sentence.subString(from: index, length: 1)
+        inputChar = inputChar + String.init(repeating: " ", count: 5 - inputChar.count)
+        var inputStack = sentence.subString(from: index + 1, length: sentence.count - index - 1)
+        inputStack = inputStack + String.init(repeating: " ", count: 15 - inputStack.count)
+        print(stackStr + inputChar + inputStack + option)
     }
     
 }

@@ -8,11 +8,10 @@
 
 import Foundation
 
-/**
- 大写是非终结符，小写是终结符
- */
-
-let productions = ["E->TK", "K->+TK", "K->ε", "T->FM", "M->*FM", "M->ε", "F->i", "F->(E)"]
-
-let analyzer = Analyzer.init(with: productions)
+let productions1 = ["E->TK", "K->+TK", "K->ε", "T->FM", "M->*FM", "M->ε", "F->i", "F->(E)"]
+let sentence1 = "a+b#"
+//let sentence2 = "i)+i#"
+//    i+i*i
+//    i)+i
+let analyzer = Analyzer.init(with: productions1, with: sentence1)
 analyzer.analyze()
